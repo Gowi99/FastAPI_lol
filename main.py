@@ -2,7 +2,7 @@ from fastapi import FastAPI, HTTPException
 import httpx
 
 
-API_KEY = "RGAPI-abd9cacd-b224-41d1-9def-8c0c43ec82b3" 
+API_KEY = "RGAPI-0cc0880e-d04d-4ee8-83cb-a085234aa079" 
 REGION = "eun1"
 
 app = FastAPI()
