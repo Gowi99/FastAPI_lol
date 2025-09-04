@@ -1,6 +1,7 @@
 import httpx
+from datetime import datetime
 
-API_KEY = "RGAPI-0cc0880e-d04d-4ee8-83cb-a085234aa079"
+API_KEY = "RGAPI-395a53c4-a766-4a96-b62c-0deff6330dbf"
 PLATFORM = "EUROPE" 
 REGION = "EUN1"
 gameName = "Gowi"
@@ -31,7 +32,7 @@ def get_match_details(match_id, PLATFORM, API_KEY):
     headers = {"X-Riot-Token": API_KEY}
     response = httpx.get(url, headers=headers)
     if response.status_code == 200:
-        return response.json()
+        return response.json()  # pytanie czy my chcemy całego jsona czy tylko jakąś jego część, bo szkoda zapytań
     else:
         print(f"Error: {response.status_code}, {response.text}")
         return None
@@ -53,11 +54,40 @@ print(f"PUUID: {puuid}")
 match_history = get_match_history(get_puuid(gameName, tagLine, PLATFORM, API_KEY), PLATFORM, API_KEY)
 print(match_history)
 
-praticipants = get_match_details(match_history[0], PLATFORM, API_KEY)['metadata']['participants']
-print(len(praticipants))
+# Pobieranie zawodników z historii meczów
 
-for puuid in praticipants:
-    gameName, tagLine = get_gameName_and_tagLine_from_puuid(puuid, PLATFORM, API_KEY)
-    print(f"{gameName}#{tagLine}")
+# praticipants = get_match_details(match_history[0], PLATFORM, API_KEY)['metadata']['participants']
+# print(len(praticipants))
+
+# for puuid in praticipants:
+#     gameName, tagLine = get_gameName_and_tagLine_from_puuid(puuid, PLATFORM, API_KEY)
+#     print(f"{gameName}#{tagLine}")
+
+def get_gameStartTimestamp(match_id, PLATFORM, API_KEY):
+    url = f"https://{PLATFORM}.api.riotgames.com/lol/match/v5/matches/{match_id}"
+    headers = {"X-Riot-Token": API_KEY}
+    response = httpx.get(url, headers=headers)
+    if response.status_code == 200:
+        data = response.json()
+        return data.get("info", {}).get("gameStartTimestamp")
+    else:
+        print(f"Error: {response.status_code}, {response.text}")
+        return None, None
+    
+start_time = datetime.fromtimestamp(get_gameStartTimestamp(match_history[1], PLATFORM, API_KEY)/1000)
+print(f"Start time: {start_time.strftime("%Y-%m-%d %H:%M:%S")}")
 
 
+def get_gameEndTimestamp(match_id, PLATFORM, API_KEY):
+    url = f"https://{PLATFORM}.api.riotgames.com/lol/match/v5/matches/{match_id}"
+    headers = {"X-Riot-Token": API_KEY}
+    response = httpx.get(url, headers=headers)
+    if response.status_code == 200:
+        data = response.json()
+        return data.get("info", {}).get("gameEndTimestamp")
+    else:
+        print(f"Error: {response.status_code}, {response.text}")
+        return None, None
+    
+start_time = datetime.fromtimestamp(get_gameEndTimestamp(match_history[1], PLATFORM, API_KEY)/1000)
+print(f"End time: {start_time.strftime("%Y-%m-%d %H:%M:%S")}")
