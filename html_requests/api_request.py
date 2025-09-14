@@ -31,7 +31,7 @@ def post_puuid(gameName, tagLine, region):
         print(f"Error: {response.status_code}, {response.text}")
         return None
 
-puuid = post_puuid('Gowi', "420", "eune")
+puuid = post_puuid('Gowi', "420", "kr") # trzeba sprawdzić czy na pewno wykrywa, ze jest 'kr' a nie 'eune' 
 print(puuid)
 print(puuid.text)
 
