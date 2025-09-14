@@ -52,7 +52,6 @@ async def get_puuid_route(request: Request, gameName: str = Form(...), tagLine: 
     puuid = get_puuid(gameName, tagLine, platform, API_KEY)
     return templates.TemplateResponse("result.html", {"request": request, "puuid": puuid})
 
-# Wywal dziwne bledy bez info, ale chyba to przez brak neta
 
 @app.post("/test", response_class=HTMLResponse)
 async def test(request: Request, gameName: str = Form(...), tagLine: str = Form(...), region: str = Form(...)):

@@ -24,7 +24,7 @@ def post_puuid(gameName, tagLine, region):
                 "tagLine": tagLine,
                 "region": region}
 
-    response = httpx.post(url, json=payload)
+    response = httpx.post(url, data=payload)
     if response.status_code == 200: 
         return response
     else:
@@ -33,6 +33,7 @@ def post_puuid(gameName, tagLine, region):
 
 puuid = post_puuid('Gowi', "420", "eune")
 print(puuid)
+print(puuid.text)
 
 
 # # print(get_puuid().text)
