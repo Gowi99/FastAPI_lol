@@ -1,2 +1,2 @@
 
-API_KEY = "RGAPI-68e4c829-a113-4c87-84a8-6b57a76ba35e"
+API_KEY = "RGAPI-8ecc72b4-9eae-43cd-b1c3-c0ab5559385b"

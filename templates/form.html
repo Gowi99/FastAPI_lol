@@ -4,20 +4,25 @@
     <title>Pobierz PUUID</title>
 </head>
 <body>
-    <h2>Podaj dane gracza</h2>
-    <form action="/get-puuid" method="post">
-        <label>Game Name:</label>
-        <input type="text" name="gameName" required><br><br>
-        <label>Tag Line:</label>
-        <input type="text" name="tagLine" required><br><br>
-        <label>Region:</label>
-        <select name="region" id="region-select" required>
-            <option value="eune">EUNE</option>
-            <option value="euw">EUW</option>
-            <option value="na">North America</option>
-            <option value="kr">Korea</option>
-        </select><br><br>
+    <div>
+        <div>
+            <h2>Player 1</h2>
+            <form action="/get-puuid" method="post">
+            <label>Game Name:</label>
+            <input type="text" name="gameName" required><br><br>
+            <label>Tag Line:</label>
+            <input type="text" name="tagLine" required><br><br>
+            <label>Region:</label>
+            <select name="region" id="region-select" required>
+                <option value="eune">EUNE</option>
+                <option value="euw">EUW</option>
+                <option value="na">North America</option>
+                <option value="kr">Korea</option>
+            </select><br><br>
+        </div>
+        
         <button type="submit">Pobierz PUUID</button>
-    </form>
+        </form>
+    </div>
 </body>
 </html>

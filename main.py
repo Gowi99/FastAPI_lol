@@ -49,17 +49,22 @@ def region_to_platform(region: str) -> str:
 # Strona z formularzem
 @app.get("/", response_class=HTMLResponse)
 async def form_page(request: Request):
-    return templates.TemplateResponse("form.html", {"request": request})
+    return templates.TemplateResponse("form_2_players.html", {"request": request})
 
 @app.post("/get-puuid", response_class=HTMLResponse) # Wypierdala błąd 500, chyba problem z selectem w form.html
-async def get_puuid_route(request: Request, gameName: str = Form(...), tagLine: str = Form(...), region: str = Form(...)):
-    platform = region_to_platform(region)
-    if not platform:
+async def get_puuid_route(request: Request, gameName1: str = Form(...), tagLine1: str = Form(...), region1: str = Form(...), gameName2: str = Form(...), tagLine2: str = Form(...), region2: str = Form(...)):
+    platform1 = region_to_platform(region1)
+    platform2 = region_to_platform(region2)
+    if not platform1:
         raise HTTPException(status_code=400, detail=f"Nieznany region: {region}")
-    puuid = get_puuid(gameName, tagLine, platform, API_KEY)
-    return templates.TemplateResponse("result.html", {"request": request, "puuid": puuid})
+    if not platform2:
+        raise HTTPException(status_code=400, detail=f"Nieznany region: {region}")
+    puuid1 = get_puuid(gameName1, tagLine1, platform1, API_KEY)
+    puuid2 = get_puuid(gameName2, tagLine2, platform2, API_KEY)
+    return templates.TemplateResponse("result.html", {"request": request, "puuid1": puuid1, "puuid2": puuid2})
 
 
 @app.post("/test", response_class=HTMLResponse)
 async def test(request: Request, gameName: str = Form(...), tagLine: str = Form(...), region: str = Form(...)):
     return templates.TemplateResponse("test.html", {"request": request, "gameName": gameName, "tagLine": tagLine, "region": region})
+
