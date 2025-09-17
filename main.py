@@ -1,3 +1,10 @@
+# gracz1igracz2.namesitags -> puuids
+# puuids == puuid1 i puuid2
+# puuid1i2 -> pobierz historie -> if mecz_z_h1 in historia2 -true-> wspolny
+#                              -> if gracz1 i gracz2 in mecz_z_h1
+
+# mozna zrobic wykres winratio na przestrzeni np. tygodnia, miesiaca, roku
+
 from pydantic import BaseModel
 from config import API_KEY
 from fastapi import FastAPI, Form, Request
