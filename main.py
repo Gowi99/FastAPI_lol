@@ -4,7 +4,7 @@
 #                              -> if gracz1 i gracz2 in mecz_z_h1
 
 # mozna zrobic wykres winratio na przestrzeni np. tygodnia, miesiaca, roku
-
+# mozna zrobic wybor z listy bohaterow a pozniej winratio dzienne z tygodnia
 from pydantic import BaseModel
 from config import API_KEY
 from fastapi import FastAPI, Form, Request

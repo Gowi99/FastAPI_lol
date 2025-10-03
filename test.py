@@ -1,7 +1,8 @@
+from config import API_KEY
 import httpx
-from datetime import datetime
+from datetime import datetime, timedelta
 
-API_KEY = "RGAPI-395a53c4-a766-4a96-b62c-0deff6330dbf"
+
 PLATFORM = "EUROPE" 
 REGION = "EUN1"
 gameName = "Gowi"
@@ -56,12 +57,12 @@ print(match_history)
 
 # Pobieranie zawodników z historii meczów
 
-# praticipants = get_match_details(match_history[0], PLATFORM, API_KEY)['metadata']['participants']
-# print(len(praticipants))
+praticipants = get_match_details(match_history[0], PLATFORM, API_KEY)['metadata']['participants']
+print(len(praticipants))
 
-# for puuid in praticipants:
-#     gameName, tagLine = get_gameName_and_tagLine_from_puuid(puuid, PLATFORM, API_KEY)
-#     print(f"{gameName}#{tagLine}")
+for puuid in praticipants:
+    gameName, tagLine = get_gameName_and_tagLine_from_puuid(puuid, PLATFORM, API_KEY)
+    print(f"{gameName}#{tagLine}")
 
 def get_gameStartTimestamp(match_id, PLATFORM, API_KEY):
     url = f"https://{PLATFORM}.api.riotgames.com/lol/match/v5/matches/{match_id}"
@@ -74,8 +75,8 @@ def get_gameStartTimestamp(match_id, PLATFORM, API_KEY):
         print(f"Error: {response.status_code}, {response.text}")
         return None, None
     
-start_time = datetime.fromtimestamp(get_gameStartTimestamp(match_history[1], PLATFORM, API_KEY)/1000)
-print(f"Start time: {start_time.strftime("%Y-%m-%d %H:%M:%S")}")
+start_time = datetime.fromtimestamp(get_gameStartTimestamp(match_history[0], PLATFORM, API_KEY)/1000)
+print(f"Start time: {start_time.strftime('%Y-%m-%d %H:%M:%S')}")
 
 
 def get_gameEndTimestamp(match_id, PLATFORM, API_KEY):
@@ -89,5 +90,46 @@ def get_gameEndTimestamp(match_id, PLATFORM, API_KEY):
         print(f"Error: {response.status_code}, {response.text}")
         return None, None
     
-start_time = datetime.fromtimestamp(get_gameEndTimestamp(match_history[1], PLATFORM, API_KEY)/1000)
-print(f"End time: {start_time.strftime("%Y-%m-%d %H:%M:%S")}")
+end_time = datetime.fromtimestamp(get_gameEndTimestamp(match_history[0], PLATFORM, API_KEY)/1000)
+print(f"End time: {end_time.strftime('%Y-%m-%d %H:%M:%S')}")
+
+
+def get_endOfGameResult(match_id, PLATFORM, API_KEY):
+    url = f"https://{PLATFORM}.api.riotgames.com/lol/match/v5/matches/{match_id}"
+    headers = {"X-Riot-Token": API_KEY}
+    response = httpx.get(url, headers=headers)
+    if response.status_code == 200:
+        data = response.json()
+        return data.get("info", {}).get("endOfGameResult")
+    else:
+        print(f"Error: {response.status_code}, {response.text}")
+        return None, None
+
+print(get_endOfGameResult(match_history[0], PLATFORM, API_KEY))
+
+def get_gameDuration(match_id, PLATFORM, API_KEY):
+    url = f"https://{PLATFORM}.api.riotgames.com/lol/match/v5/matches/{match_id}"
+    headers = {"X-Riot-Token": API_KEY}
+    response = httpx.get(url, headers=headers)
+    if response.status_code == 200:
+        data = response.json()
+        return data.get("info", {}).get("gameDuration")
+    else:
+        print(f"Error: {response.status_code}, {response.text}")
+        return None, None
+
+def get_gameCreation(match_id, PLATFORM, API_KEY):
+    url = f"https://{PLATFORM}.api.riotgames.com/lol/match/v5/matches/{match_id}"
+    headers = {"X-Riot-Token": API_KEY}
+    response = httpx.get(url, headers=headers)
+    if response.status_code == 200:
+        data = response.json()
+        return data.get("info", {}).get("gameCreation")
+    else:
+        print(f"Error: {response.status_code}, {response.text}")
+        return None, None
+
+
+# sposob liczenia daty meczu dla op.gg
+print(datetime.fromtimestamp(get_gameCreation(match_history[1], PLATFORM, API_KEY)/1000) + timedelta(seconds=get_gameDuration(match_history[1], PLATFORM, API_KEY)))
+
