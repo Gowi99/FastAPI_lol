@@ -14,13 +14,13 @@
   </style>
 </head>
 <body>
-  <form method="post" action="/get-puuid">
+  <form method="post" action="/">
     <input type="text" name="gameName1" placeholder="gameName" required>
     <input type="text" name="tagLine1" placeholder="tagLine" required>
     <select name="region1" required>
       <option value="" disabled selected>Region</option>
       <option value="euw">EUW</option>
-      <option value="eune">EUNE</option>
+      <option value="eune" selected>EUNE</option>
       <option value="na">NA</option>
     </select>
     <br><br>
@@ -29,10 +29,13 @@
       <select name="region2" required>
         <option value="" disabled selected>Region</option>
         <option value="euw">EUW</option>
-        <option value="eune">EUNE</option>
+        <option value="eune" selected>EUNE</option>
         <option value="na">NA</option>
       </select>
     <button type="submit">Szukaj</button>
   </form>
+  {% if error %}
+  <p style="color: red;">{{ error }}</p>
+  {% endif %}
 </body>
 </html>

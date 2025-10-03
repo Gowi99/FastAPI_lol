@@ -51,7 +51,7 @@ def region_to_platform(region: str) -> str:
 async def form_page(request: Request):
     return templates.TemplateResponse("form_2_players.html", {"request": request})
 
-@app.post("/get-puuid", response_class=HTMLResponse) # Wypierdala błąd 500, chyba problem z selectem w form.html
+@app.post("/", response_class=HTMLResponse)
 async def get_puuid_route(request: Request, gameName1: str = Form(...), tagLine1: str = Form(...), region1: str = Form(...), gameName2: str = Form(...), tagLine2: str = Form(...), region2: str = Form(...)):
     platform1 = region_to_platform(region1)
     platform2 = region_to_platform(region2)
@@ -61,7 +61,9 @@ async def get_puuid_route(request: Request, gameName1: str = Form(...), tagLine1
         raise HTTPException(status_code=400, detail=f"Nieznany region: {region}")
     puuid1 = get_puuid(gameName1, tagLine1, platform1, API_KEY)
     puuid2 = get_puuid(gameName2, tagLine2, platform2, API_KEY)
-    return templates.TemplateResponse("result.html", {"request": request, "puuid1": puuid1, "puuid2": puuid2})
+    if puuid1.startswith("Error") or puuid2.startswith("Error"):
+        return templates.TemplateResponse("form_2_players.html", {"request": request, "error": f"Błędne dane"})
+    return templates.TemplateResponse("result.html", {"request": request, "gameName1": gameName1,"tagLine1": tagLine1, "gameName2": gameName2,"tagLine2": tagLine2, "puuid1": puuid1, "puuid2": puuid2})
 
 
 @app.post("/test", response_class=HTMLResponse)
