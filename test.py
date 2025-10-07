@@ -133,3 +133,4 @@ def get_gameCreation(match_id, PLATFORM, API_KEY):
 # sposob liczenia daty meczu dla op.gg
 print(datetime.fromtimestamp(get_gameCreation(match_history[1], PLATFORM, API_KEY)/1000) + timedelta(seconds=get_gameDuration(match_history[1], PLATFORM, API_KEY)))
 
+print(len(get_match_history(get_puuid(gameName, tagLine, PLATFORM, API_KEY), PLATFORM, API_KEY)))
