@@ -4,11 +4,14 @@
     <title>PUUID</title>
 </head>
 <body>
-    <h2>PUUID gracza {{gameName1}}:{{tagLine1}}:</h2>
+    <h2>PUUID gracza {{gameName1}}#{{tagLine1}}:</h2>
     <p>{{ puuid1 }}</p>
-    <h2>PUUID gracza {{gameName2}}:{{tagLine2}}:</h2>
+    <h2>PUUID gracza {{gameName2}}#{{tagLine2}}:</h2>
     <p>{{ puuid2 }}</p><br>
     <a href="/last10gameswinrate"><button type="button">Last 10 Games Winrate</button></a>
+    {% if winrate %}
+    <p style="color: black; "><b>Winrate z ostanich 10 meczy: {{winrate}}</b>></p>
+    {% endif %}
     <hr>
     <a href="/"><button type="button">Back</button></a>
 
