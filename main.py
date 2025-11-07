@@ -27,42 +27,46 @@ class InfoDto(BaseModel):
     model_config = ConfigDict(alias_generator=to_snake, populate_by_name=True, extra='ignore')
     participants: list[ParticipantDto]
 
-class MetadataDto(BaseModel):
-    matchId: str
-
 class MatchDto(BaseModel):
     model_config = ConfigDict(alias_generator=to_snake, populate_by_name=True, extra='ignore')
     info: InfoDto
 
 
-def get_puuid(gameName, tagLine, PLATFORM, API_KEY):
+async def get_puuid(gameName, tagLine, PLATFORM, API_KEY):
     url = f"https://{PLATFORM}.api.riotgames.com/riot/account/v1/accounts/by-riot-id/{gameName}/{tagLine}"
     headers = {"X-Riot-Token": API_KEY}
-    response = httpx.get(url, headers=headers)
+
+    async with httpx.AsyncClient() as client:
+        response = await client.get(url, headers=headers)
+
     if response.status_code == 200: 
         return response.json().get("puuid")
-    elif response.status_code == 403:
-        logging.error("API key")
-        return "Error: API key."
-    elif response.status_code == 401:
-        logging.error("API key.")
-        return "Error: API key."
+    elif response.status_code in (401, 403):
+        logging.error("Bad API key")
+        return None
     else:
-        return f"Error: {response.status_code}, {response.text}"
-
-def get_last_100_matches_by_puuid(puuid: str, PLATFORM: str, API_KEY: str) -> list | None:
-    url = f"https://europe.api.riotgames.com/lol/match/v5/matches/by-puuid/{puuid}/ids?start=0&count=100"
-    headers = {"X-Riot-Token": API_KEY}
-    response = httpx.get(url, headers=headers)
-    if response.status_code == 200:
-        return response.json()
-    else:
-        logging.info(f"Error: {response.status_code}, {response.text}")
+        logging.error(f"Riot API error {response.status_code}: {response.text}")
         return None
 
-def last_10_common_matches(puuid1: str, puuid2: str, PLATFORM: str, API_KEY: str) -> list:
-    match_history1 = get_last_100_matches_by_puuid(puuid1, PLATFORM, API_KEY)
-    match_history2 = get_last_100_matches_by_puuid(puuid2, PLATFORM, API_KEY)
+
+async def get_last_100_matches_by_puuid(puuid: str, PLATFORM: str, API_KEY: str) -> list | None:
+    url = f"https://europe.api.riotgames.com/lol/match/v5/matches/by-puuid/{puuid}/ids?start=0&count=100"
+    headers = {"X-Riot-Token": API_KEY}
+    
+    async with httpx.AsyncClient() as client:
+            response = await client.get(url, headers=headers)     
+
+    if response.status_code == 200:
+            return response.json()
+        
+    logging.info(f"Error: {response.status_code}, {response.text}")
+    return []
+    
+
+
+async def last_10_common_matches(puuid1: str, puuid2: str, PLATFORM: str, API_KEY: str) -> list:
+    match_history1 = await get_last_100_matches_by_puuid(puuid1, PLATFORM, API_KEY)
+    match_history2 = await get_last_100_matches_by_puuid(puuid2, PLATFORM, API_KEY)
     i = 0
     common_matches = []
     for match in match_history1:
@@ -73,10 +77,13 @@ def last_10_common_matches(puuid1: str, puuid2: str, PLATFORM: str, API_KEY: str
             return common_matches[:10]
     return common_matches     
 
-def get_if_common_win(puuid1: str, puuid2: str, match_id: str, PLATFORM: str, API_KEY: str) -> bool | None:
+async def get_if_common_win(puuid1: str, puuid2: str, match_id: str, PLATFORM: str, API_KEY: str) -> bool | None:
     url = f"https://{PLATFORM}.api.riotgames.com/lol/match/v5/matches/{match_id}"
     headers = {"X-Riot-Token": API_KEY}
-    response = httpx.get(url, headers=headers)
+
+    async with httpx.AsyncClient() as client:
+        response = await client.get(url, headers=headers)
+
     if response.status_code == 200:
         puuid1_win = False
         puuid2_win = False
@@ -89,16 +96,18 @@ def get_if_common_win(puuid1: str, puuid2: str, match_id: str, PLATFORM: str, AP
                 puuid2_win = True
         if puuid1_win and puuid2_win:
             return True
+        else:
+            return False
     else:
         print(f"Error: {response.status_code}, {response.text}")
         return None
 
-def get_winrate(puuid1: str, puuid2: str, platform: str, API_KEY: str) -> float:
-    last_10 = last_10_common_matches(puuid1, puuid2, platform, API_KEY)
+async def get_winrate(puuid1: str, puuid2: str, platform: str, API_KEY: str) -> float:
+    last_10 = await last_10_common_matches(puuid1, puuid2, platform, API_KEY)
     if last_10:
         common_wins = 0
         for match_id in last_10:
-            if get_if_common_win(puuid1, puuid2, match_id, platform, API_KEY):
+            if await get_if_common_win(puuid1, puuid2, match_id, platform, API_KEY):
                 common_wins += 1
         winrate = common_wins / len(last_10) * 100
         return winrate
@@ -137,12 +146,12 @@ async def get_puuid_route(request: Request, gameName1: str = Form(...), tagLine1
     if platform1 != platform2:
         # pytanie czy to dziala
         return templates.TemplateResponse("form_2_players.html", {"request": request, "error": f"Gracze musza byc z tego samego regionu", "puuid1": puuid1, "puuid2": puuid2})
-    puuid1 = get_puuid(gameName1, tagLine1, platform1, API_KEY)
-    puuid2 = get_puuid(gameName2, tagLine2, platform2, API_KEY)
-    winrate = get_winrate(puuid1, puuid2, platform1, API_KEY)
+    puuid1 = await get_puuid(gameName1, tagLine1, platform1, API_KEY)
+    puuid2 = await get_puuid(gameName2, tagLine2, platform2, API_KEY)
+    winrate = await get_winrate(puuid1, puuid2, platform1, API_KEY)
     # tutaj trzeba zrobic ifa dla roznych wynikow winratio: nie bylo wspolnych, bylo mniej niz 10, bylo 10
     # jak nie bedzie wspolnych meczy to zwroci None i trzeba ta wartość obsluzyc itp.
-    if puuid1.startswith("Error") or puuid2.startswith("Error"):
+    if not puuid1 or not puuid2:
         return templates.TemplateResponse("form_2_players.html", {"request": request, "error": f"Błędne dane", "puuid1": puuid1, "puuid2": puuid2})
     return templates.TemplateResponse("result.html", {"request": request, "gameName1": gameName1,"tagLine1": tagLine1, "gameName2": gameName2,"tagLine2": tagLine2, "puuid1": puuid1, "puuid2": puuid2, "winrate": winrate})
 
